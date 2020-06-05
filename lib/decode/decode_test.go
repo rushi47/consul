@@ -239,6 +239,9 @@ func decodeHCLToMapStructure(source string, target interface{}) error {
 		Metadata:   md,
 		Result:     target,
 	})
+	if err != nil {
+		return err
+	}
 	return decoder.Decode(&raw)
 }
 
