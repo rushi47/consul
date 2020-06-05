@@ -13,7 +13,7 @@ import (
 // by Go's runtime, simplifying snapshot and buffer management dramatically.
 type EventSnapshot struct {
 	// Request that this snapshot satisfies.
-	Request *agentpb.SubscribeRequest
+	Request *SubscribeRequest
 
 	// Snap is the first item in the buffer containing the snapshot. Once the
 	// snapshot is complete, subsequent update's BufferItems are appended such
@@ -35,7 +35,7 @@ type EventSnapshot struct {
 
 // SnapFn is the type of function needed to generate a snapshot for a topic and
 // key.
-type SnapFn func(req *agentpb.SubscribeRequest, buf *EventBuffer) (uint64, error)
+type SnapFn func(req *SubscribeRequest, buf *EventBuffer) (uint64, error)
 
 // NewEventSnapshot creates a snapshot buffer based on the subscription request.
 // The current buffer head for the topic in question is passed so that once the
@@ -44,7 +44,7 @@ type SnapFn func(req *agentpb.SubscribeRequest, buf *EventBuffer) (uint64, error
 // missed. Once the snapshot is delivered the topic buffer is spliced onto the
 // snapshot buffer so that subscribers will naturally follow from the snapshot
 // to wait for any subsequent updates.
-func NewEventSnapshot(req *agentpb.SubscribeRequest, topicBufferHead *BufferItem, fn SnapFn) *EventSnapshot {
+func NewEventSnapshot(req *SubscribeRequest, topicBufferHead *BufferItem, fn SnapFn) *EventSnapshot {
 	buf := NewEventBuffer()
 	s := &EventSnapshot{
 		Request:         req,
@@ -68,7 +68,7 @@ func (s *EventSnapshot) doSnapshot() {
 	}
 
 	// We wrote the snapshot events to the buffer, send the "end of snapshot" event
-	s.snapBuffer.Append([]agentpb.Event{agentpb.Event{
+	s.snapBuffer.Append([]Event{{
 		Topic: s.Request.Topic,
 		Key:   s.Request.Key,
 		Index: idx,
