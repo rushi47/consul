@@ -782,7 +782,7 @@ func TestACLEndpoint_TokenClone(t *testing.T) {
 			{ID: r1.ID},
 		}
 		t.ServiceIdentities = []*structs.ACLServiceIdentity{
-			&structs.ACLServiceIdentity{ServiceName: "web"},
+			{ServiceName: "web"},
 		}
 	})
 	require.NoError(t, err)
@@ -921,10 +921,10 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 			ACLToken: structs.ACLToken{
 				Description: "foobar",
 				Policies: []structs.ACLTokenPolicyLink{
-					structs.ACLTokenPolicyLink{
+					{
 						ID: policy1.ID,
 					},
-					structs.ACLTokenPolicyLink{
+					{
 						Name: policy2.Name,
 					},
 				},
@@ -967,10 +967,10 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 			ACLToken: structs.ACLToken{
 				Description: "foobar",
 				Roles: []structs.ACLTokenRoleLink{
-					structs.ACLTokenRoleLink{
+					{
 						ID: role1.ID,
 					},
-					structs.ACLTokenRoleLink{
+					{
 						Name: role2.Name,
 					},
 				},
@@ -1122,7 +1122,7 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 				Policies:    nil,
 				Local:       false,
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: ""},
+					{ServiceName: ""},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -1143,7 +1143,7 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 				Policies:    nil,
 				Local:       false,
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: long},
+					{ServiceName: long},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -1189,7 +1189,7 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 					Policies:    nil,
 					Local:       false,
 					ServiceIdentities: []*structs.ACLServiceIdentity{
-						&structs.ACLServiceIdentity{ServiceName: test.name},
+						{ServiceName: test.name},
 					},
 				},
 				WriteRequest: structs.WriteRequest{Token: "root"},
@@ -1221,8 +1221,8 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 				Policies:    nil,
 				Local:       false,
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: "example"},
-					&structs.ACLServiceIdentity{ServiceName: "example"},
+					{ServiceName: "example"},
+					{ServiceName: "example"},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -1249,11 +1249,11 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 				Policies:    nil,
 				Local:       false,
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{
+					{
 						ServiceName: "example",
 						Datacenters: []string{"dc2", "dc3"},
 					},
-					&structs.ACLServiceIdentity{
+					{
 						ServiceName: "example",
 						Datacenters: []string{"dc1", "dc2"},
 					},
@@ -1286,7 +1286,7 @@ func TestACLEndpoint_TokenSet(t *testing.T) {
 				Policies:    nil,
 				Local:       true,
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: "foo", Datacenters: []string{"dc2"}},
+					{ServiceName: "foo", Datacenters: []string{"dc2"}},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -1836,7 +1836,7 @@ func TestACLEndpoint_TokenSet_anon(t *testing.T) {
 		ACLToken: structs.ACLToken{
 			AccessorID: structs.ACLTokenAnonymousID,
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: policy.ID,
 				},
 			},
@@ -2674,10 +2674,10 @@ func TestACLEndpoint_PolicyResolve(t *testing.T) {
 		Datacenter: "dc1",
 		ACLToken: structs.ACLToken{
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: p1.ID,
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: p2.ID,
 				},
 			},
@@ -2799,7 +2799,7 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        "baz",
 				Policies: []structs.ACLRolePolicyLink{
-					structs.ACLRolePolicyLink{
+					{
 						ID: testPolicy1.ID,
 					},
 				},
@@ -2834,7 +2834,7 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "bat",
 				Name:        "bar",
 				Policies: []structs.ACLRolePolicyLink{
-					structs.ACLRolePolicyLink{
+					{
 						ID: testPolicy2.ID,
 					},
 				},
@@ -2871,10 +2871,10 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        "baz",
 				Policies: []structs.ACLRolePolicyLink{
-					structs.ACLRolePolicyLink{
+					{
 						ID: policy1.ID,
 					},
-					structs.ACLRolePolicyLink{
+					{
 						Name: policy2.Name,
 					},
 				},
@@ -2918,7 +2918,7 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        roleNameGen(t),
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: ""},
+					{ServiceName: ""},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -2937,7 +2937,7 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        roleNameGen(t),
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: long},
+					{ServiceName: long},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -2981,7 +2981,7 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 					Description: "foobar",
 					Name:        roleNameGen(t),
 					ServiceIdentities: []*structs.ACLServiceIdentity{
-						&structs.ACLServiceIdentity{ServiceName: test.name},
+						{ServiceName: test.name},
 					},
 				},
 				WriteRequest: structs.WriteRequest{Token: "root"},
@@ -3011,8 +3011,8 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        roleNameGen(t),
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{ServiceName: "example"},
-					&structs.ACLServiceIdentity{ServiceName: "example"},
+					{ServiceName: "example"},
+					{ServiceName: "example"},
 				},
 			},
 			WriteRequest: structs.WriteRequest{Token: "root"},
@@ -3037,11 +3037,11 @@ func TestACLEndpoint_RoleSet(t *testing.T) {
 				Description: "foobar",
 				Name:        roleNameGen(t),
 				ServiceIdentities: []*structs.ACLServiceIdentity{
-					&structs.ACLServiceIdentity{
+					{
 						ServiceName: "example",
 						Datacenters: []string{"dc2", "dc3"},
 					},
-					&structs.ACLServiceIdentity{
+					{
 						ServiceName: "example",
 						Datacenters: []string{"dc1", "dc2"},
 					},
@@ -3129,7 +3129,7 @@ func TestACLEndpoint_RoleSet_names(t *testing.T) {
 					Name:        test.name,
 					Description: "foobar",
 					Policies: []structs.ACLRolePolicyLink{
-						structs.ACLRolePolicyLink{
+						{
 							ID: testPolicy1.ID,
 						},
 					},
@@ -3253,10 +3253,10 @@ func TestACLEndpoint_RoleResolve(t *testing.T) {
 			Datacenter: "dc1",
 			ACLToken: structs.ACLToken{
 				Roles: []structs.ACLTokenRoleLink{
-					structs.ACLTokenRoleLink{
+					{
 						ID: r1.ID,
 					},
-					structs.ACLTokenRoleLink{
+					{
 						ID: r2.ID,
 					},
 				},

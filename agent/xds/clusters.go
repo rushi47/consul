@@ -200,7 +200,7 @@ func (s *Server) makeGatewayServiceClusters(cfgSnap *proxycfg.ConfigSnapshot) ([
 
 	clusters := make([]proto.Message, 0, len(services))
 
-	for svc, _ := range services {
+	for svc := range services {
 		clusterName := connect.ServiceSNI(svc.ID, "", svc.NamespaceOrDefault(), cfgSnap.Datacenter, cfgSnap.Roots.TrustDomain)
 		resolver, hasResolver := resolvers[svc]
 

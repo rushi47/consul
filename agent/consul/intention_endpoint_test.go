@@ -576,7 +576,7 @@ func TestIntention_WildcardACLEnforcement(t *testing.T) {
 			Match: &structs.IntentionQueryMatch{
 				Type: structs.IntentionMatchDestination,
 				Entries: []structs.IntentionMatchEntry{
-					structs.IntentionMatchEntry{
+					{
 						Namespace: "default",
 						Name:      "*",
 					},

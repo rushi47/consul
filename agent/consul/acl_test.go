@@ -72,10 +72,10 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "435a75af-1763-4980-89f4-f0951dda53b4",
 			SecretID:   "b1b6be70-ed2e-4c80-8495-bdb3db110b1e",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "not-found",
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "acl-ro",
 				},
 			},
@@ -85,10 +85,10 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "435a75af-1763-4980-89f4-f0951dda53b4",
 			SecretID:   "b1b6be70-ed2e-4c80-8495-bdb3db110b1e",
 			Roles: []structs.ACLTokenRoleLink{
-				structs.ACLTokenRoleLink{
+				{
 					ID: "not-found",
 				},
-				structs.ACLTokenRoleLink{
+				{
 					ID: "acl-ro",
 				},
 			},
@@ -98,7 +98,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "435a75af-1763-4980-89f4-f0951dda53b4",
 			SecretID:   "b1b6be70-ed2e-4c80-8495-bdb3db110b1e",
 			Roles: []structs.ACLTokenRoleLink{
-				structs.ACLTokenRoleLink{
+				{
 					ID: "missing-policy",
 				},
 			},
@@ -121,10 +121,10 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "dc2-key-wr",
 				},
 			},
@@ -136,7 +136,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Roles: []structs.ACLTokenRoleLink{
-				structs.ACLTokenRoleLink{
+				{
 					ID: "found",
 				},
 			},
@@ -146,15 +146,15 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "dc2-key-wr",
 				},
 			},
 			Roles: []structs.ACLTokenRoleLink{
-				structs.ACLTokenRoleLink{
+				{
 					ID: "service-ro",
 				},
 			},
@@ -164,7 +164,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "f6c5a5fb-4da4-422b-9abf-2c942813fc71",
 			SecretID:   "55cb7d69-2bea-42c3-a68f-2a1443d2abbc",
 			ServiceIdentities: []*structs.ACLServiceIdentity{
-				&structs.ACLServiceIdentity{
+				{
 					ServiceName: "service1",
 				},
 			},
@@ -174,7 +174,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "7c87dfad-be37-446e-8305-299585677cb5",
 			SecretID:   "dfca9676-ac80-453a-837b-4c0cf923473c",
 			ServiceIdentities: []*structs.ACLServiceIdentity{
-				&structs.ACLServiceIdentity{
+				{
 					ServiceName: "service2",
 				},
 			},
@@ -184,7 +184,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "435a75af-1763-4980-89f4-f0951dda53b4",
 			SecretID:   "b1b6be70-ed2e-4c80-8495-bdb3db110b1e",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "acl-ro",
 				},
 			},
@@ -194,7 +194,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "435a75af-1763-4980-89f4-f0951dda53b4",
 			SecretID:   "b1b6be70-ed2e-4c80-8495-bdb3db110b1e",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -204,10 +204,10 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -217,7 +217,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
 			},
@@ -227,10 +227,10 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "5f57c1f6-6a89-4186-9445-531b316e01df",
 			SecretID:   "a1a54629-5050-4d17-8a4e-560d2423f835",
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -240,7 +240,7 @@ func testIdentityForToken(token string) (bool, structs.ACLIdentity, error) {
 			AccessorID: "00000000-0000-0000-0000-000000000002",
 			SecretID:   anonymousToken,
 			Policies: []structs.ACLTokenPolicyLink{
-				structs.ACLTokenPolicyLink{
+				{
 					ID: "node-wr",
 				},
 			},
@@ -321,7 +321,7 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "service-ro",
 			Description: "service-ro",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "service-ro",
 				},
 			},
@@ -333,7 +333,7 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "service-wr",
 			Description: "service-wr",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "service-wr",
 				},
 			},
@@ -345,10 +345,10 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "missing-policy",
 			Description: "missing-policy",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "not-found",
 				},
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-ro",
 				},
 			},
@@ -360,10 +360,10 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "found",
 			Description: "found",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLRolePolicyLink{
+				{
 					ID: "dc2-key-wr",
 				},
 			},
@@ -374,7 +374,7 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "acl-ro",
 			Description: "acl-ro",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-ro",
 				},
 			},
@@ -385,7 +385,7 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "acl-rw",
 			Description: "acl-rw",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -396,10 +396,10 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "racey-unmodified",
 			Description: "racey-unmodified",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -410,7 +410,7 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "racey-modified",
 			Description: "racey-modified",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "node-wr",
 				},
 			},
@@ -421,10 +421,10 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "concurrent-resolve-1",
 			Description: "concurrent-resolve-1",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -435,10 +435,10 @@ func testRoleForID(roleID string) (bool, *structs.ACLRole, error) {
 			Name:        "concurrent-resolve-2",
 			Description: "concurrent-resolve-2",
 			Policies: []structs.ACLRolePolicyLink{
-				structs.ACLRolePolicyLink{
+				{
 					ID: "node-wr",
 				},
-				structs.ACLRolePolicyLink{
+				{
 					ID: "acl-wr",
 				},
 			},
@@ -1508,7 +1508,7 @@ func TestACLResolver_Client(t *testing.T) {
 					ID: "not-needed",
 					PolicyRules: acl.PolicyRules{
 						Nodes: []*acl.NodeRule{
-							&acl.NodeRule{
+							{
 								Name:   "foo",
 								Policy: acl.PolicyWrite,
 							},
@@ -1809,7 +1809,7 @@ func TestACLResolver_Legacy(t *testing.T) {
 						ID: "not-needed",
 						PolicyRules: acl.PolicyRules{
 							Nodes: []*acl.NodeRule{
-								&acl.NodeRule{
+								{
 									Name:   "foo",
 									Policy: acl.PolicyWrite,
 								},
@@ -1860,7 +1860,7 @@ func TestACLResolver_Legacy(t *testing.T) {
 						ID: "not-needed",
 						PolicyRules: acl.PolicyRules{
 							Nodes: []*acl.NodeRule{
-								&acl.NodeRule{
+								{
 									Name:   "foo",
 									Policy: acl.PolicyWrite,
 								},
@@ -1913,7 +1913,7 @@ func TestACLResolver_Legacy(t *testing.T) {
 						ID: "not-needed",
 						PolicyRules: acl.PolicyRules{
 							Nodes: []*acl.NodeRule{
-								&acl.NodeRule{
+								{
 									Name:   "foo",
 									Policy: acl.PolicyWrite,
 								},
@@ -1967,7 +1967,7 @@ func TestACLResolver_Legacy(t *testing.T) {
 						ID: "not-needed",
 						PolicyRules: acl.PolicyRules{
 							Nodes: []*acl.NodeRule{
-								&acl.NodeRule{
+								{
 									Name:   "foo",
 									Policy: acl.PolicyWrite,
 								},
@@ -2021,7 +2021,7 @@ func TestACLResolver_Legacy(t *testing.T) {
 						ID: "not-needed",
 						PolicyRules: acl.PolicyRules{
 							Nodes: []*acl.NodeRule{
-								&acl.NodeRule{
+								{
 									Name:   "foo",
 									Policy: acl.PolicyWrite,
 								},
@@ -2481,7 +2481,7 @@ func TestACL_filterNodeServices(t *testing.T) {
 				Node: "node1",
 			},
 			Services: map[string]*structs.NodeService{
-				"foo": &structs.NodeService{
+				"foo": {
 					ID:      "foo",
 					Service: "foo",
 				},
@@ -2730,13 +2730,13 @@ func TestACL_filterNodeDump(t *testing.T) {
 			&structs.NodeInfo{
 				Node: "node1",
 				Services: []*structs.NodeService{
-					&structs.NodeService{
+					{
 						ID:      "foo",
 						Service: "foo",
 					},
 				},
 				Checks: []*structs.HealthCheck{
-					&structs.HealthCheck{
+					{
 						Node:        "node1",
 						CheckID:     "check1",
 						ServiceName: "foo",

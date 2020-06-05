@@ -97,7 +97,7 @@ func copyProxyConfig(ns *structs.NodeService) (structs.ConnectProxyConfig, error
 	}
 
 	// we can safely modify these since we just copied them
-	for idx, _ := range proxyCfg.Upstreams {
+	for idx := range proxyCfg.Upstreams {
 		us := &proxyCfg.Upstreams[idx]
 		if us.DestinationType != structs.UpstreamDestTypePreparedQuery && us.DestinationNamespace == "" {
 			// default the upstreams target namespace to the namespace of the proxy
@@ -862,7 +862,7 @@ func (s *state) resetWatchesFromChain(
 		snap.WatchedUpstreams[id][target.ID] = cancel
 	}
 
-	for dc, _ := range needGateways {
+	for dc := range needGateways {
 		if _, ok := snap.WatchedGateways[id][dc]; ok {
 			continue
 		}
@@ -1029,14 +1029,14 @@ func (s *state) handleUpdateTerminatingGateway(u cache.UpdateEvent, snap *Config
 		}
 
 		// Delete gateway service mapping for services that were not in the update
-		for sid, _ := range snap.TerminatingGateway.GatewayServices {
+		for sid := range snap.TerminatingGateway.GatewayServices {
 			if _, ok := svcMap[sid]; !ok {
 				delete(snap.TerminatingGateway.GatewayServices, sid)
 			}
 		}
 
 		// Clean up services with hostname mapping for services that were not in the update
-		for sid, _ := range snap.TerminatingGateway.HostnameServices {
+		for sid := range snap.TerminatingGateway.HostnameServices {
 			if _, ok := svcMap[sid]; !ok {
 				delete(snap.TerminatingGateway.HostnameServices, sid)
 			}
@@ -1157,7 +1157,7 @@ func (s *state) handleUpdateMeshGateway(u cache.UpdateEvent, snap *ConfigSnapsho
 			snap.MeshGateway.HostnameDatacenters[dc] = s.hostnameEndpoints(logging.MeshGateway, snap.Datacenter, nodes)
 		}
 
-		for dc, _ := range snap.MeshGateway.HostnameDatacenters {
+		for dc := range snap.MeshGateway.HostnameDatacenters {
 			if _, ok := dcIndexedNodes.DatacenterNodes[dc]; !ok {
 				delete(snap.MeshGateway.HostnameDatacenters, dc)
 			}

@@ -82,7 +82,7 @@ func TestStructs_ACLToken_Convert(t *testing.T) {
 			SecretID:    "67c29ecd-cabc-42e0-a20e-771e9a1ab70c",
 			Description: "new token",
 			Policies: []ACLTokenPolicyLink{
-				ACLTokenPolicyLink{
+				{
 					ID: ACLPolicyGlobalManagementID,
 				},
 			},
@@ -121,7 +121,7 @@ func TestStructs_ACLToken_Convert(t *testing.T) {
 			SecretID:    "67c29ecd-cabc-42e0-a20e-771e9a1ab70c",
 			Description: "new token",
 			Policies: []ACLTokenPolicyLink{
-				ACLTokenPolicyLink{
+				{
 					ID: ACLPolicyGlobalManagementID,
 				},
 			},
