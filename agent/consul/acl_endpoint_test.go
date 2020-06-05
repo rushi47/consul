@@ -102,6 +102,7 @@ func TestACLEndpoint_BootstrapTokens(t *testing.T) {
 	require.True(t, strings.HasPrefix(err.Error(), structs.ACLBootstrapNotAllowedErr.Error()))
 
 	_, resetIdx, err := s1.fsm.State().CanBootstrapACLToken()
+	require.NoError(t, err)
 
 	resetPath := filepath.Join(dir1, "acl-bootstrap-reset")
 	require.NoError(t, ioutil.WriteFile(resetPath, []byte(fmt.Sprintf("%d", resetIdx)), 0600))
@@ -1849,6 +1850,7 @@ func TestACLEndpoint_TokenSet_anon(t *testing.T) {
 	require.NotEmpty(t, token.SecretID)
 
 	tokenResp, err := retrieveTestToken(codec, "root", "dc1", structs.ACLTokenAnonymousID)
+	require.NoError(t, err)
 	require.Equal(t, len(tokenResp.Token.Policies), 1)
 	require.Equal(t, tokenResp.Token.Policies[0].ID, policy.ID)
 
@@ -2083,6 +2085,7 @@ func TestACLEndpoint_TokenDelete_anon(t *testing.T) {
 
 	// Make sure the token is still there
 	tokenResp, err := retrieveTestToken(codec, "root", "dc1", structs.ACLTokenAnonymousID)
+	require.NoError(t, err)
 	require.NotNil(t, tokenResp.Token)
 }
 
@@ -2571,6 +2574,7 @@ func TestACLEndpoint_PolicyDelete(t *testing.T) {
 
 	// Make sure the policy is gone
 	tokenResp, err := retrieveTestPolicy(codec, "root", "dc1", existingPolicy.ID)
+	require.NoError(t, err)
 	require.Nil(t, tokenResp.Policy)
 }
 
@@ -3186,6 +3190,7 @@ func TestACLEndpoint_RoleDelete(t *testing.T) {
 
 	// Make sure the role is gone
 	roleResp, err := retrieveTestRole(codec, "root", "dc1", existingRole.ID)
+	require.NoError(t, err)
 	require.Nil(t, roleResp.Role)
 }
 
