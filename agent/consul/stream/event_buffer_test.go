@@ -8,7 +8,7 @@ import (
 	time "time"
 
 	"github.com/stretchr/testify/assert"
-	
+
 	"github.com/hashicorp/consul/agent/agentpb"
 )
 
@@ -33,14 +33,14 @@ func TestEventBufferFuzz(t *testing.T) {
 		for i := 0; i < nMessages; i++ {
 			// Event content is arbitrary and not valid for our use of buffers in
 			// streaming - here we only care about the semantics of the buffer.
-			e := agentpb.Event{
-				Index:   uint64(i), // Indexes should be contiguous
-				Topic:   agentpb.Topic_ServiceHealth,
+			e := Event{
+				Index: uint64(i), // Indexes should be contiguous
+				Topic: Topic_ServiceHealth,
 				Payload: &agentpb.Event_EndOfSnapshot{
 					EndOfSnapshot: true,
 				},
 			}
-			b.Append([]agentpb.Event{e})
+			b.Append([]Event{e})
 			// Sleep sometimes for a while to let some subscribers catch up
 			wait := time.Duration(z.Uint64()) * time.Millisecond
 			time.Sleep(wait)

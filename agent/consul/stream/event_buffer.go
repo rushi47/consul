@@ -69,11 +69,6 @@ func NewEventBuffer() *EventBuffer {
 	return b
 }
 
-// TODO:
-type Event struct {
-	Key string
-}
-
 // Append a set of events from one raft operation to the buffer and notify
 // watchers. Note that events must not have been previously made available to
 // any other goroutine since we may mutate them to ensure ACL Rules are

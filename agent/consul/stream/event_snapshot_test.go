@@ -85,12 +85,12 @@ func TestEventSnapshot(t *testing.T) {
 				// Use an instance index that's unique and should never appear in the
 				// output so we can be sure these were not included as they came before
 				// the snapshot.
-				tb.Append([]agentpb.Event{testHealthEvent(index, 10000+i)})
+				tb.Append([]Event{testHealthEvent(index, 10000+i)})
 			}
 
 			// Create EventSnapshot, (will call snFn in another goroutine). The
 			// Request is ignored by the SnapFn so doesn't matter for now.
-			es := NewEventSnapshot(&agentpb.SubscribeRequest{}, tbHead, snFn)
+			es := NewEventSnapshot(&SubscribeRequest{}, tbHead, snFn)
 
 			// Deliver any post-snapshot events simulating updates that occur
 			// logically after snapshot. It doesn't matter that these might actually
@@ -102,7 +102,7 @@ func TestEventSnapshot(t *testing.T) {
 			for i := 0; i < tc.updatesAfterSnap; i++ {
 				index := snapIndex + 1 + uint64(i)
 				// Use an instance index that's unique.
-				tb.Append([]agentpb.Event{testHealthEvent(index, 20000+i)})
+				tb.Append([]Event{testHealthEvent(index, 20000+i)})
 			}
 
 			// Now read the snapshot buffer until we've received everything we expect.
@@ -167,10 +167,10 @@ func testHealthConsecutiveSnapshotFn(size int, index uint64) SnapFn {
 	}
 }
 
-func testHealthEvent(index uint64, n int) agentpb.Event {
-	return agentpb.Event{
+func testHealthEvent(index uint64, n int) Event {
+	return Event{
 		Index: index,
-		Topic: agentpb.Topic_ServiceHealth,
+		Topic: Topic_ServiceHealth,
 		Payload: &agentpb.Event_ServiceHealth{
 			ServiceHealth: &agentpb.ServiceHealthUpdate{
 				Op: agentpb.CatalogOp_Register,

@@ -23,8 +23,8 @@ func TestSubscription(t *testing.T) {
 	defer cancel()
 
 	// Create a subscription
-	req := &agentpb.SubscribeRequest{
-		Topic: agentpb.Topic_ServiceHealth,
+	req := &SubscribeRequest{
+		Topic: Topic_ServiceHealth,
 		Key:   "test",
 	}
 	sub := NewSubscription(ctx, req, startHead)
@@ -103,8 +103,8 @@ func TestSubscriptionCloseReload(t *testing.T) {
 	defer cancel()
 
 	// Create a subscription
-	req := &agentpb.SubscribeRequest{
-		Topic: agentpb.Topic_ServiceHealth,
+	req := &SubscribeRequest{
+		Topic: Topic_ServiceHealth,
 		Key:   "test",
 	}
 	sub := NewSubscription(ctx, req, startHead)
@@ -140,13 +140,13 @@ func testPublish(index uint64, b *EventBuffer, key string) {
 	// Don't care about the event payload for now just the semantics of publising
 	// something. This is not a valid stream in the end-to-end streaming protocol
 	// but enough to test subscription mechanics.
-	e := agentpb.Event{
+	e := Event{
 		Index: index,
-		Topic: agentpb.Topic_ServiceHealth,
+		Topic: Topic_ServiceHealth,
 		Key:   key,
 		Payload: &agentpb.Event_EndOfSnapshot{
 			EndOfSnapshot: true,
 		},
 	}
-	b.Append([]agentpb.Event{e})
+	b.Append([]Event{e})
 }

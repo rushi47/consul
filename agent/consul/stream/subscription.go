@@ -45,7 +45,13 @@ type Subscription struct {
 }
 
 type SubscribeRequest struct {
-	Key string
+	Topic Topic
+	Key   string
+	Token string
+	Index uint64
+
+	Datacenter string // TODO: not used?
+	Filter     string // TODO: not used?
 }
 
 // NewSubscription return a new subscription.
