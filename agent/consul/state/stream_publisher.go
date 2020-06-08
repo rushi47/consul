@@ -55,10 +55,6 @@ type EventPublisher struct {
 	// commitCh decouples the Commit call in the FSM hot path from distributing
 	// the resulting events.
 	commitCh chan commitUpdate
-
-	// staged stores the events to be published when the transaction is committed.
-	staged     []stream.Event
-	stagedLock sync.RWMutex
 }
 
 type commitUpdate struct {
@@ -91,56 +87,6 @@ func NewEventPublisher(store *Store, topicBufferSize int, snapCacheTTL time.Dura
 
 	return e
 }
-
-// // PreparePublish accepts a set of events to be published. All events must have
-// // the same index which must be higher than any previously Committed events.
-// // Events will not be delivered to subscribers until Commit is called. If
-// // PreparePublish is called a second time before Commit, and the events have a
-// // higher index, it is assumed the previous set of events were aborted and they
-// // will be dropped. If the events in a subsequent call have the same index, they
-// // will be staged in addition to those already prepared and all will be
-// // committed on next Commit.
-// func (e *EventPublisher) PreparePublish(events []stream.Event) error {
-// 	if len(events) == 0 {
-// 		// no-op
-// 		return nil
-// 	}
-
-// 	e.stagedLock.Lock()
-// 	defer e.stagedLock.Unlock()
-
-// 	if len(e.staged) > 0 {
-// 		if e.staged[0].Index != events[0].Index {
-// 			// implicit abort - these events are from a different index, replace
-// 			// current staged events.
-// 			e.staged = events
-// 		} else {
-// 			// Merge events at same index
-// 			e.staged = append(e.staged, events...)
-// 		}
-// 	} else {
-// 		e.staged = events
-// 	}
-// 	return nil
-// }
-
-// // Commit triggers any staged events to be sent to the relevant listeners. This
-// // is called via txn.Defer to delay it from running until the transaction has
-// // been finalized.
-// func (e *EventPublisher) Commit() {
-// 	e.stagedLock.Lock()
-// 	defer e.stagedLock.Unlock()
-
-// 	if len(e.staged) == 0 {
-// 		return
-// 	}
-
-// 	e.commitCh <- commitUpdate{
-// 		tx:     e.store.db.Txn(false),
-// 		events: e.staged,
-// 	}
-// 	e.staged = nil
-// }
 
 func (e *EventPublisher) publishChanges(tx *txn, changes memdb.Changes) error {
 	var events []stream.Event
