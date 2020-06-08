@@ -455,14 +455,14 @@ func evServiceCheckDelete(e *agentpb.Event) error {
 func TestServiceHealthEventsFromChanges(t *testing.T) {
 	cases := []struct {
 		Name       string
-		Setup      func(s *Store, tx *txnWrapper) error
-		Mutate     func(s *Store, tx *txnWrapper) error
+		Setup      func(s *Store, tx *txn) error
+		Mutate     func(s *Store, tx *txn) error
 		WantEvents []agentpb.Event
 		WantErr    bool
 	}{
 		{
 			Name: "irrelevant events",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.kvsSetTxn(tx, tx.Index, &structs.DirEntry{
 					Key:   "foo",
 					Value: []byte("bar"),
@@ -473,7 +473,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "service reg, new node",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web"))
 			},
@@ -484,11 +484,11 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "service reg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db"))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web"))
 			},
@@ -500,7 +500,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "service dereg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -511,7 +511,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.deleteServiceTxn(tx, tx.Index, "node1", "web", nil)
 			},
 			WantEvents: []agentpb.Event{
@@ -522,7 +522,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "node dereg",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -533,7 +533,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.deleteNodeTxn(tx, tx.Index, "node1")
 			},
 			WantEvents: []agentpb.Event{
@@ -545,7 +545,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect native reg, new node",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regConnectNative))
 			},
@@ -559,11 +559,11 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect native reg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db"))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regConnectNative))
 			},
@@ -582,7 +582,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect native dereg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -591,7 +591,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regConnectNative))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.deleteServiceTxn(tx, tx.Index, "node1", "web", nil)
 			},
 			WantEvents: []agentpb.Event{
@@ -603,7 +603,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar reg, new node",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web")); err != nil {
 					return err
@@ -622,7 +622,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar reg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -630,7 +630,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web"))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
@@ -644,7 +644,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar dereg, existing node",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -656,7 +656,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete only the sidecar
 				return s.deleteServiceTxn(tx, tx.Index, "node1", "web_sidecar_proxy", nil)
 			},
@@ -669,7 +669,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar mutate svc",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -681,7 +681,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change port of the target service instance
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regMutatePort))
@@ -700,7 +700,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar mutate sidecar",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -712,7 +712,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change port of the sidecar service instance
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar, regMutatePort))
@@ -737,7 +737,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar rename service",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
 					return err
@@ -749,7 +749,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change service name but not ID, update proxy too
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regRenameService)); err != nil {
@@ -794,7 +794,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "connect sidecar change destination service",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a web_changed service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web_changed")); err != nil {
@@ -810,7 +810,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regSidecar))
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change only the destination service of the proxy without a service
 				// rename or deleting and recreating the proxy. This is far fetched but
 				// still valid.
@@ -846,7 +846,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node update",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -864,7 +864,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change only the node meta.
 				return s.ensureRegistrationTxn(tx, tx.Index,
 					testNodeRegistration(t, regNodeMeta))
@@ -904,7 +904,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node rename",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -922,7 +922,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change only the node NAME but not it's ID. We do it for every service
 				// though since this is effectively what client agent anti-entropy would
 				// do on a node rename. If we only rename the node it will have no
@@ -981,7 +981,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node check failure",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -999,7 +999,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change only the node-level check status
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regNodeCheckFail)); err != nil {
@@ -1041,7 +1041,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node service check failure",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -1059,7 +1059,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Change the service-level check status
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "web", regServiceCheckFail)); err != nil {
@@ -1104,7 +1104,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node node-level check delete",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -1122,7 +1122,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete only the node-level check
 				if err := s.deleteCheckTxn(tx, tx.Index, "node1", "serf-health", nil); err != nil {
 					return err
@@ -1158,7 +1158,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "multi-service node service check delete",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Register a db service
 				if err := s.ensureRegistrationTxn(tx, tx.Index,
 					testServiceRegistration(t, "db")); err != nil {
@@ -1176,7 +1176,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete the service-level check for the main service
 				if err := s.deleteCheckTxn(tx, tx.Index, "node1", "service:web", nil); err != nil {
 					return err
@@ -1216,7 +1216,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "many services on many nodes in one TX",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				// Node1
 
 				// Register a db service
@@ -1239,7 +1239,7 @@ func TestServiceHealthEventsFromChanges(t *testing.T) {
 
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// In one transaction the operator moves the web service and it's
 				// sidecar from node2 back to node1 and deletes them from node2
 

@@ -142,7 +142,7 @@ func NewEventPublisher(store *Store, topicBufferSize int, snapCacheTTL time.Dura
 // 	e.staged = nil
 // }
 
-func (e *EventPublisher) publishChanges(tx *txnWrapper, changes memdb.Changes) error {
+func (e *EventPublisher) publishChanges(tx *txn, changes memdb.Changes) error {
 	var events []stream.Event
 	for topic, th := range topicRegistry {
 		if th.ProcessChanges != nil {
@@ -226,7 +226,7 @@ func (e *EventPublisher) sendEvents(update commitUpdate) {
 
 // handleACLUpdate handles an ACL token/policy/role update. This method assumes
 // the lock is held.
-func (e *EventPublisher) handleACLUpdate(tx *txnWrapper, event stream.Event) error {
+func (e *EventPublisher) handleACLUpdate(tx *txn, event stream.Event) error {
 	switch event.Topic {
 	case stream.Topic_ACLTokens:
 		token := event.GetACLToken()

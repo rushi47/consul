@@ -128,7 +128,7 @@ type nodeServiceTuple struct {
 
 // ServiceHealthEventsFromChanges returns all the service and Connect health
 // events that should be emitted given a set of changes to the state store.
-func (s *Store) ServiceHealthEventsFromChanges(tx *txnWrapper, changes memdb.Changes) ([]agentpb.Event, error) {
+func (s *Store) ServiceHealthEventsFromChanges(tx *txn, changes memdb.Changes) ([]agentpb.Event, error) {
 	var events []agentpb.Event
 
 	var nodeChanges map[string]*memdb.Change
@@ -337,7 +337,7 @@ func (s *Store) ServiceHealthEventsFromChanges(tx *txnWrapper, changes memdb.Cha
 // given node. This mirrors some of the the logic in the oddly-named
 // parseCheckServiceNodes but is more efficient since we know they are all on
 // the same node.
-func (s *Store) serviceHealthEventsForNode(tx *txnWrapper, node string) ([]agentpb.Event, error) {
+func (s *Store) serviceHealthEventsForNode(tx *txn, node string) ([]agentpb.Event, error) {
 	// TODO(namespace-streaming): figure out the right EntMeta and mystery arg.
 	services, err := s.catalogServiceListByNode(tx, node, nil, false)
 	if err != nil {
@@ -370,7 +370,7 @@ func (s *Store) serviceHealthEventsForNode(tx *txnWrapper, node string) ([]agent
 // (both node specific and service-specific). node-level Checks are returned as
 // a slice, service-specific checks as a map of slices with the service id as
 // the map key.
-func (s *Store) getNodeAndChecks(tx *txnWrapper, node string) (*structs.Node,
+func (s *Store) getNodeAndChecks(tx *txn, node string) (*structs.Node,
 	structs.HealthChecks, map[string]structs.HealthChecks, error) {
 	// Fetch the node
 	nodeRaw, err := tx.First("nodes", "id", node)
@@ -405,7 +405,7 @@ func (s *Store) getNodeAndChecks(tx *txnWrapper, node string) (*structs.Node,
 	return n, nodeChecks, svcChecks, nil
 }
 
-func (s *Store) serviceHealthEventsForServiceInstance(tx *txnWrapper,
+func (s *Store) serviceHealthEventsForServiceInstance(tx *txn,
 	node, serviceID string, entMeta *structs.EnterpriseMeta) ([]agentpb.Event, error) {
 
 	// Lookup node
@@ -429,7 +429,7 @@ func (s *Store) serviceHealthEventsForServiceInstance(tx *txnWrapper,
 		sn.(*structs.ServiceNode), nodeChecks, svcChecks)
 }
 
-func (s *Store) serviceHealthEventsForServiceNodeInternal(tx *txnWrapper,
+func (s *Store) serviceHealthEventsForServiceNodeInternal(tx *txn,
 	node *structs.Node,
 	sn *structs.ServiceNode,
 	nodeChecks structs.HealthChecks,
@@ -474,7 +474,7 @@ func (s *Store) serviceHealthEventsForServiceNodeInternal(tx *txnWrapper,
 	return []agentpb.Event{e}, nil
 }
 
-func (s *Store) serviceHealthDeregEventsForServiceInstance(tx *txnWrapper,
+func (s *Store) serviceHealthDeregEventsForServiceInstance(tx *txn,
 	sn *structs.ServiceNode, entMeta *structs.EnterpriseMeta) ([]agentpb.Event, error) {
 
 	// We actually only need the node name populated in the node part as it's only

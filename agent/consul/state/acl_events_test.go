@@ -109,14 +109,14 @@ func testRole(t *testing.T, n, p int) *structs.ACLRole {
 func TestACLEventsFromChanges(t *testing.T) {
 	cases := []struct {
 		Name       string
-		Setup      func(s *Store, tx *txnWrapper) error
-		Mutate     func(s *Store, tx *txnWrapper) error
+		Setup      func(s *Store, tx *txn) error
+		Mutate     func(s *Store, tx *txn) error
 		WantEvents []agentpb.Event
 		WantErr    bool
 	}{
 		{
 			Name: "token create",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				if err := s.aclTokenSetTxn(tx, tx.Index, testToken(t, 1), false, false, false, false); err != nil {
 					return err
 				}
@@ -129,13 +129,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "token update",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclTokenSetTxn(tx, tx.Index, testToken(t, 1), false, false, false, false); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Add a policy to the token (never mind it doesn't exist for now) we
 				// allow it in the set command below.
 				token := testToken(t, 1)
@@ -153,13 +153,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "token delete",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclTokenSetTxn(tx, tx.Index, testToken(t, 1), false, false, false, false); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete it
 				token := testToken(t, 1)
 				if err := s.aclTokenDeleteTxn(tx, tx.Index, token.AccessorID, "id", nil); err != nil {
@@ -175,7 +175,7 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "policy create",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				if err := s.aclPolicySetTxn(tx, tx.Index, testPolicy(t, 1)); err != nil {
 					return err
 				}
@@ -188,13 +188,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "policy update",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclPolicySetTxn(tx, tx.Index, testPolicy(t, 1)); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				policy := testPolicy(t, 1)
 				policy.Rules = `operator = "write"`
 				if err := s.aclPolicySetTxn(tx, tx.Index, policy); err != nil {
@@ -210,13 +210,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "policy delete",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclPolicySetTxn(tx, tx.Index, testPolicy(t, 1)); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete it
 				policy := testPolicy(t, 1)
 				if err := s.aclPolicyDeleteTxn(tx, tx.Index, policy.ID, s.aclPolicyGetByID, nil); err != nil {
@@ -232,7 +232,7 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "role create",
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				if err := s.aclRoleSetTxn(tx, tx.Index, testRole(t, 1, 1), true); err != nil {
 					return err
 				}
@@ -245,13 +245,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "role update",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclRoleSetTxn(tx, tx.Index, testRole(t, 1, 1), true); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				role := testRole(t, 1, 1)
 				policy2 := testPolicy(t, 2)
 				role.Policies = append(role.Policies, structs.ACLRolePolicyLink{
@@ -271,13 +271,13 @@ func TestACLEventsFromChanges(t *testing.T) {
 		},
 		{
 			Name: "role delete",
-			Setup: func(s *Store, tx *txnWrapper) error {
+			Setup: func(s *Store, tx *txn) error {
 				if err := s.aclRoleSetTxn(tx, tx.Index, testRole(t, 1, 1), true); err != nil {
 					return err
 				}
 				return nil
 			},
-			Mutate: func(s *Store, tx *txnWrapper) error {
+			Mutate: func(s *Store, tx *txn) error {
 				// Delete it
 				role := testRole(t, 1, 1)
 				if err := s.aclRoleDeleteTxn(tx, tx.Index, role.ID, s.aclRoleGetByID, nil); err != nil {

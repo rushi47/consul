@@ -8,7 +8,7 @@ import (
 
 // ACLEventsFromChanges returns all the ACL token, policy or role events that
 // should be emitted given a set of changes to the state store.
-func (s *Store) ACLEventsFromChanges(tx *txnWrapper, changes memdb.Changes) ([]agentpb.Event, error) {
+func (s *Store) ACLEventsFromChanges(tx *txn, changes memdb.Changes) ([]agentpb.Event, error) {
 
 	// Don't allocate yet since in majority of update transactions no ACL token
 	// will be changed.
