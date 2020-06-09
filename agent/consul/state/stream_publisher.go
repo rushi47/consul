@@ -263,8 +263,10 @@ func secretHash(token string) string {
 //
 // When the called is finished with the subscription for any reason, it must
 // call Unsubscribe to free ACL tracking resources.
-func (e *EventPublisher) Subscribe(ctx context.Context,
-	req *stream.SubscribeRequest) (*stream.Subscription, error) {
+func (e *EventPublisher) Subscribe(
+	ctx context.Context,
+	req *stream.SubscribeRequest,
+) (*stream.Subscription, error) {
 	// Ensure we know how to make a snapshot for this topic
 	_, ok := topicRegistry[req.Topic]
 	if !ok {

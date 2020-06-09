@@ -128,8 +128,8 @@ type nodeServiceTuple struct {
 
 // ServiceHealthEventsFromChanges returns all the service and Connect health
 // events that should be emitted given a set of changes to the state store.
-func (s *Store) ServiceHealthEventsFromChanges(tx *txn, changes memdb.Changes) ([]agentpb.Event, error) {
-	var events []agentpb.Event
+func (s *Store) ServiceHealthEventsFromChanges(tx *txn, changes memdb.Changes) ([]stream.Event, error) {
+	var events []stream.Event
 
 	var nodeChanges map[string]*memdb.Change
 	var serviceChanges map[nodeServiceTuple]*memdb.Change
@@ -318,8 +318,7 @@ func (s *Store) ServiceHealthEventsFromChanges(tx *txn, changes memdb.Changes) (
 			continue
 		}
 		// Build service event and append it
-		es, err := s.serviceHealthEventsForServiceInstance(tx, tuple.Node,
-			tuple.ServiceID, &tuple.EntMeta)
+		es, err := s.serviceHealthEventsForServiceInstance(tx, tuple.Node, tuple.ServiceID, &tuple.EntMeta)
 		if err != nil {
 			return nil, err
 		}
