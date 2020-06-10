@@ -189,10 +189,12 @@ func TestTranslationsForType(t *testing.T) {
 	to := reflect.TypeOf(translateExample{})
 	actual := translationsForType(to)
 	expected := map[string]string{
-		"first":  "fielddefaultcanonical",
-		"second": "field_with_mapstruct_tag",
-		"third":  "field_with_mapstruct_omit",
-		"forth":  "fieldwithemptytag",
+		"first":                        "fielddefaultcanonical",
+		"second":                       "field_with_mapstruct_tag",
+		"third":                        "field_with_mapstruct_omit",
+		"forth":                        "fieldwithemptytag",
+		"fieldwithmapstructuretagomit": "field_with_mapstruct_omit",
+		"fieldwithmapstructuretag":     "field_with_mapstruct_tag",
 	}
 	require.Equal(t, expected, actual)
 }
