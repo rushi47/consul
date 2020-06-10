@@ -161,6 +161,15 @@ type notifier interface {
 // mode, it runs a full Consul server. In client-only mode, it only forwards
 // requests to other Consul servers.
 type Agent struct {
+
+	// autoConfigJSON is the JSON serialized auto-config configuration to be
+	// used when reloading a configuration
+	autoConfigJSON string
+
+	// flags are needed when rebuilding our configuration after an auto-config
+	// update
+	configFlags config.Flags
+
 	// config is the agent configuration.
 	config *config.RuntimeConfig
 
@@ -321,9 +330,54 @@ type Agent struct {
 	enterpriseAgent
 }
 
+type agentOption struct {
+	logger hclog.InterceptLogger
+	flags  *config.Flags
+}
+
+func WithLogger(logger hclog.InterceptLogger) agentOption {
+	return agentOption{
+		logger: logger,
+	}
+}
+
+func WithFlags(flags *config.Flags) agentOption {
+	return agentOption{
+		flags: flags,
+	}
+}
+
+func flattenAgentOptions(options []agentOption) agentOption {
+	var flat agentOption
+	for _, opt := range options {
+		if opt.logger != nil {
+			flat.logger = opt.logger
+		}
+		if opt.flags != nil {
+			flat.flags = opt.flags
+		}
+	}
+	return flat
+}
+
 // New verifies the configuration given has a Datacenter and DataDir
 // configured, and maps the remaining config fields to fields on the Agent.
 func New(c *config.RuntimeConfig, logger hclog.InterceptLogger) (*Agent, error) {
+	return NewWithOptions(c, WithLogger(logger))
+}
+
+func NewWithOptions(c *config.RuntimeConfig, options ...agentOption) (*Agent, error) {
+	flat := flattenAgentOptions(options)
+
+	logger := flat.logger
+	var configFlags config.Flags
+	if flat.flags != nil {
+		configFlags = *flat.flags
+	}
+
+	// TODO (autoconf) figure out how to let this setting be pushed down via autoconf
+	// right now it gets defaulted if unset so this check actually doesn't do much
+	// for a normal running agent.
 	if c.Datacenter == "" {
 		return nil, fmt.Errorf("Must configure a Datacenter")
 	}
@@ -357,7 +411,9 @@ func New(c *config.RuntimeConfig, logger hclog.InterceptLogger) (*Agent, error) 
 		tokens:           new(token.Store),
 		logger:           logger,
 		tlsConfigurator:  tlsConfigurator,
+		configFlags:      configFlags,
 	}
+
 	err = a.initializeConnectionPool()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to initialize the connection pool: %w", err)
@@ -430,6 +486,22 @@ func LocalConfig(cfg *config.RuntimeConfig) local.Config {
 func (a *Agent) Start() error {
 	a.stateLock.Lock()
 	defer a.stateLock.Unlock()
+
+	// This needs to be done early on as it will potentially alter the configuration
+	// and then how other bits are brought up
+	if err := a.initializeAutoConfig(); err != nil {
+		return err
+	}
+
+	// reload the configuration if we have an auto-config source to inject
+	if a.autoConfigJSON != "" {
+		if err := a.reloadConfigUnlocked(); err != nil {
+			return fmt.Errorf("Failed to load configuration after applying auto-config settings: %w", err)
+		}
+		if err := a.tlsConfigurator.Update(a.config.ToTLSUtilConfig()); err != nil {
+			return fmt.Errorf("Failed to load TLS configurations after applying auto-config settings: %2", err)
+		}
+	}
 
 	c := a.config
 
