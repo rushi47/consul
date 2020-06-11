@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/consul/sdk/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -30,13 +32,13 @@ func TestCacheGet_noIndex(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
 
 	// Get, should not fetch since we already have a satisfying value
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.True(meta.Hit)
@@ -64,13 +66,13 @@ func TestCacheGet_initError(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.Error(err)
 	require.Nil(result)
 	require.False(meta.Hit)
 
 	// Get, should fetch again since our last fetch was an error
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.Error(err)
 	require.Nil(result)
 	require.False(meta.Hit)
@@ -104,13 +106,13 @@ func TestCacheGet_cachedErrorsDontStick(t *testing.T) {
 
 	// Get, should fetch and get error
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.Error(err)
 	require.Nil(result)
 	require.False(meta.Hit)
 
 	// Get, should fetch again since our last fetch was an error, but get success
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -159,13 +161,13 @@ func TestCacheGet_blankCacheKey(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: ""})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
 
 	// Get, should not fetch since we already have a satisfying value
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -274,7 +276,7 @@ func TestCacheGet_blockingIndex(t *testing.T) {
 
 	// Configure the type
 	triggerCh := make(chan time.Time)
-	typ.Static(FetchResult{Value: 1, Index: 4}, nil).Once()
+	typ.Static(FetchResult{Value: 1, Index: 4}, nil).Times(0)
 	typ.Static(FetchResult{Value: 12, Index: 5}, nil).Once()
 	typ.Static(FetchResult{Value: 42, Index: 6}, nil).WaitUntil(triggerCh)
 
@@ -294,6 +296,23 @@ func TestCacheGet_blockingIndex(t *testing.T) {
 
 	// Should return
 	TestCacheGetChResult(t, resultCh, 42)
+}
+
+func TestCacheGet_cancellation(t *testing.T) {
+	typ := TestType(t)
+	defer typ.AssertExpectations(t)
+	c := TestCache(t)
+	c.RegisterType("t", typ)
+
+	typ.Static(FetchResult{Value: 1, Index: 4}, nil).Times(0).WaitUntil(time.After(1 * time.Millisecond))
+
+	ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(50*time.Millisecond))
+	result, _, err := c.Get(ctx, "t", TestRequest(t, RequestInfo{
+		Key: "hello", MinIndex: 5}))
+
+	require.Nil(t, result)
+	require.Error(t, err)
+	testutil.RequireErrorContains(t, err, context.DeadlineExceeded.Error())
 }
 
 // Test a get with an index set will timeout if the fetch doesn't return
@@ -393,7 +412,7 @@ func TestCacheGet_emptyFetchResult(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -401,7 +420,7 @@ func TestCacheGet_emptyFetchResult(t *testing.T) {
 	// Get, should not fetch since we already have a satisfying value
 	req = TestRequest(t, RequestInfo{
 		Key: "hello", MinIndex: 1, Timeout: 100 * time.Millisecond})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -418,7 +437,7 @@ func TestCacheGet_emptyFetchResult(t *testing.T) {
 	// returns nil and so the previous result is used.
 	req = TestRequest(t, RequestInfo{
 		Key: "hello", MinIndex: 1, Timeout: 100 * time.Millisecond})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -698,7 +717,7 @@ func TestCacheGet_fetchTimeout(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -728,7 +747,7 @@ func TestCacheGet_expire(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -741,7 +760,7 @@ func TestCacheGet_expire(t *testing.T) {
 
 	// Get, should not fetch, verified via the mock assertions above
 	req = TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.True(meta.Hit)
@@ -752,7 +771,7 @@ func TestCacheGet_expire(t *testing.T) {
 
 	// Get, should fetch
 	req = TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -784,7 +803,7 @@ func TestCacheGet_expireResetGet(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -797,7 +816,7 @@ func TestCacheGet_expireResetGet(t *testing.T) {
 
 		// Get, should not fetch
 		req = TestRequest(t, RequestInfo{Key: "hello"})
-		result, meta, err = c.Get("t", req)
+		result, meta, err = c.Get(context.Background(), "t", req)
 		require.NoError(err)
 		require.Equal(42, result)
 		require.True(meta.Hit)
@@ -807,7 +826,7 @@ func TestCacheGet_expireResetGet(t *testing.T) {
 
 	// Get, should fetch
 	req = TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
@@ -840,21 +859,21 @@ func TestCacheGet_duplicateKeyDifferentType(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "foo"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(100, result)
 	require.False(meta.Hit)
 
 	// Get from t2 with same key, should fetch
 	req = TestRequest(t, RequestInfo{Key: "foo"})
-	result, meta, err = c.Get("t2", req)
+	result, meta, err = c.Get(context.Background(), "t2", req)
 	require.NoError(err)
 	require.Equal(200, result)
 	require.False(meta.Hit)
 
 	// Get from t again with same key, should cache
 	req = TestRequest(t, RequestInfo{Key: "foo"})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(100, result)
 	require.True(meta.Hit)
@@ -974,7 +993,7 @@ func TestCacheGet_refreshAge(t *testing.T) {
 		time.Sleep(2 * time.Millisecond)
 
 		// Fetch again, non-blocking
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.True(meta.Hit)
@@ -994,7 +1013,7 @@ func TestCacheGet_refreshAge(t *testing.T) {
 
 	var lastAge time.Duration
 	{
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.True(meta.Hit)
@@ -1005,7 +1024,7 @@ func TestCacheGet_refreshAge(t *testing.T) {
 	// Wait a bit longer - age should increase by at least this much
 	time.Sleep(5 * time.Millisecond)
 	{
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.True(meta.Hit)
@@ -1027,7 +1046,7 @@ func TestCacheGet_refreshAge(t *testing.T) {
 	// the test thread got down here relative to the failures.
 	for attempts := 0; attempts < 50; attempts++ {
 		time.Sleep(100 * time.Millisecond)
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		// Should never error even if background is failing as we have cached value
 		require.NoError(err)
 		require.True(meta.Hit)
@@ -1080,7 +1099,7 @@ func TestCacheGet_nonRefreshAge(t *testing.T) {
 		time.Sleep(5 * time.Millisecond)
 
 		// Fetch again, non-blocking
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.True(meta.Hit)
@@ -1092,7 +1111,7 @@ func TestCacheGet_nonRefreshAge(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	{
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.False(meta.Hit)
@@ -1108,7 +1127,7 @@ func TestCacheGet_nonRefreshAge(t *testing.T) {
 		time.Sleep(5 * time.Millisecond)
 
 		// Fetch again, non-blocking
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{Key: "hello"}))
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{Key: "hello"}))
 		require.NoError(err)
 		require.Equal(8, result)
 		require.True(meta.Hit)
@@ -1118,7 +1137,7 @@ func TestCacheGet_nonRefreshAge(t *testing.T) {
 
 	// Now verify that setting MaxAge results in cache invalidation
 	{
-		result, meta, err := c.Get("t", TestRequest(t, RequestInfo{
+		result, meta, err := c.Get(context.Background(), "t", TestRequest(t, RequestInfo{
 			Key:    "hello",
 			MaxAge: 1 * time.Millisecond,
 		}))
@@ -1150,14 +1169,14 @@ func TestCacheGet_nonBlockingType(t *testing.T) {
 
 	// Get, should fetch
 	req := TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err := c.Get("t", req)
+	result, meta, err := c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.False(meta.Hit)
 
 	// Get, should not fetch since we have a cached value
 	req = TestRequest(t, RequestInfo{Key: "hello"})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.True(meta.Hit)
@@ -1171,7 +1190,7 @@ func TestCacheGet_nonBlockingType(t *testing.T) {
 		MinIndex: 1,
 		Timeout:  10 * time.Minute,
 	})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(42, result)
 	require.True(meta.Hit)
@@ -1180,14 +1199,14 @@ func TestCacheGet_nonBlockingType(t *testing.T) {
 
 	// Get with a max age should fetch again
 	req = TestRequest(t, RequestInfo{Key: "hello", MaxAge: 5 * time.Millisecond})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(43, result)
 	require.False(meta.Hit)
 
 	// Get with a must revalidate should fetch again even without a delay.
 	req = TestRequest(t, RequestInfo{Key: "hello", MustRevalidate: true})
-	result, meta, err = c.Get("t", req)
+	result, meta, err = c.Get(context.Background(), "t", req)
 	require.NoError(err)
 	require.Equal(43, result)
 	require.False(meta.Hit)
